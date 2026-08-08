@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cloudflare-scanner-panel",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-08",
+  "workers_dev": true,
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/health"
+    ]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cloudflare-scanner-db",
+      "database_id": "48c1213f-8c40-47d2-af8b-af8003c5a630",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "vars": {
+    "ENVIRONMENT": "production",
+    "MAX_IPS": "10",
+    "MAX_PORTS": "5",
+    "MAX_TARGETS": "15",
+    "DEFAULT_TIMEOUT": "3000"
+  }
+}
