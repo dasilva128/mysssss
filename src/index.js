@@ -1,40 +1,98 @@
-const VERSION = "5.0.0";
+const UUID = "a527d6b3-2ce1-4dbe-8f75-c03c4318a66d";
 
-const ALLOWED_PORTS = new Set([
-  80, 443, 8080, 8443, 2053, 2083, 2087, 2096, 8880
-]);
+// چند IP از رنج‌های Cloudflare
+const CLOUDFLARE_IPS = [
+  "104.24.237.249",
+  "104.24.236.249",
+  "172.67.74.226",
+  "172.67.75.226",
+  "188.114.96.1",
+  "188.114.97.1"
+];
 
-function limits(env) {
-  return {
-    maxIPs: Number(env.MAX_IPS || 10),
-    maxPorts: Number(env.MAX_PORTS || 5),
-    maxTargets: Number(env.MAX_TARGETS || 15),
-    defaultTimeout: Number(env.DEFAULT_TIMEOUT || 3000)
-  };
-}
-
-function corsHeaders() {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Max-Age": "86400"
-  };
-}
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      ...corsHeaders()
-    }
+function makeVlessConfig(ip, host) {
+  const params = new URLSearchParams({
+    encryption: "none",
+    host: host,
+    path: "/",
+    security: "tls",
+    sni: host,
+    type: "ws"
   });
+
+  return `vless://${UUID}@${ip}:8443?${params.toString()}`;
 }
 
-function error(message, status = 400) {
-  return json({ success: false, error: message }, status);
-}
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const host = url.hostname;
+
+    // نمایش کانفیگ‌ها
+    if (url.pathname === "/api/config") {
+      const configs = CLOUDFLARE_IPS.map(ip =>
+        makeVlessConfig(ip, host)
+      );
+
+      return new Response(
+        JSON.stringify(
+          {
+            success: true,
+            host: host,
+            uuid: UUID,
+            port: 8443,
+            protocol: "vless",
+            transport: "ws",
+            security: "tls",
+            configs: configs
+          },
+          null,
+          2
+        ),
+        {
+          headers: {
+            "content-type": "application/json; charset=UTF-8",
+            "cache-control": "no-store"
+          }
+        }
+      );
+    }
+
+    // فقط خروجی متنی کانفیگ‌ها
+    if (url.pathname === "/api/sub") {
+      const configs = CLOUDFLARE_IPS.map(ip =>
+        makeVlessConfig(ip, host)
+      );
+
+      return new Response(configs.join("\n"), {
+        headers: {
+          "content-type": "text/plain; charset=UTF-8",
+          "cache-control": "no-store"
+        }
+      });
+    }
+
+    // صفحه اصلی
+    return new Response(
+      `Cloudflare VLESS Panel
+
+Worker:
+${host}
+
+Config API:
+${url.origin}/api/config
+
+Subscription:
+${url.origin}/api/sub
+`,
+      {
+        headers: {
+          "content-type": "text/plain; charset=UTF-8"
+        }
+      }
+    );
+  }
+};}
 
 function isValidIPv4(ip) {
   if (typeof ip !== "string") return false;
