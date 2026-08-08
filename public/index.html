@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cloudflare Scanner Panel</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="container">
+  <header>
+    <h1>🚀 Cloudflare Scanner</h1>
+    <p>پنل Cloudflare Only — بدون VPS</p>
+    <span id="health" class="badge">در حال بررسی...</span>
+    <span class="badge warning">VLESS واقعی را تأیید نمی‌کند</span>
+  </header>
+
+  <section class="card">
+    <h2>🔍 اسکن</h2>
+    <label>IPv4 ها — هر خط یک IP</label>
+    <textarea id="ips" rows="6">104.16.0.1
+104.16.0.2
+104.24.0.1</textarea>
+
+    <label>پورت‌ها</label>
+    <input id="ports" value="443,8443,2053,2083,2096">
+
+    <div class="grid">
+      <div><label>Timeout (ms)</label><input id="timeout" type="number" min="1000" max="5000" value="3000"></div>
+      <div><label>حداقل امتیاز</label><input id="threshold" type="number" min="0" max="100" value="50"></div>
+    </div>
+
+    <label>نوع template</label>
+    <div class="checks">
+      <label><input type="checkbox" value="vless_ws" checked> VLESS + WS</label>
+      <label><input type="checkbox" value="vless_ws_tls" checked> VLESS + WS + TLS</label>
+    </div>
+
+    <button id="scanBtn" onclick="startScan()">🚀 شروع اسکن</button>
+  </section>
+
+  <section id="stats" class="card hidden">
+    <h2>📊 آمار</h2>
+    <div id="statsContent" class="stats"></div>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h2>📋 نتایج</h2>
+    <div id="resultsContent" class="results"></div>
+  </section>
+
+  <section class="card">
+    <h2>🔧 تست دستی</h2>
+    <div class="grid">
+      <div><label>IP</label><input id="manualIp" placeholder="104.16.0.1"></div>
+      <div><label>Port</label><input id="manualPort" type="number" value="443"></div>
+    </div>
+    <label>نوع</label>
+    <select id="manualType">
+      <option value="vless_ws">VLESS + WS</option>
+      <option value="vless_ws_tls">VLESS + WS + TLS</option>
+    </select>
+    <button onclick="manualGenerate()">🔧 تست و تولید template</button>
+  </section>
+
+  <div id="message" class="message"></div>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
